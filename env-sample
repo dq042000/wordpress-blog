@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# See https://docs.docker.com/compose/environment-variables/#the-env-file
+
+# Choose storage path on your machine. For all storage systems
+DATA_PATH_HOST=./DB
+
+### Paths #################################################
+
+# Point to the path of your applications code on your host
+APP_CODE_PATH_HOST=./web
+
+# Point to where the `APP_CODE_PATH_HOST` should be in the container
+APP_CODE_PATH_CONTAINER=/var/app
+
+# You may add flags to the path `:cached`, `:delegated`. When using Docker Sync add `:nocopy`
+APP_CODE_CONTAINER_FLAG=:cached
+
+### PHP Version ###########################################
+
+# Select a PHP version of the Workspace and PHP-FPM containers (Does not apply to HHVM).
+# Accepted values: 8.1 - 8.0 - 7.4 - 7.3 - 7.2 - 7.1 - 7.0 - 5.6
+PHP_VERSION=8.1
+
+# If you need to change the sources (i.e. to China), set CHANGE_SOURCE to true
+CHANGE_SOURCE=false
+
+# Select a Phalcon version of the Workspace and PHP-FPM containers (Does not apply to HHVM). Accepted values: 3.4.0+
+PHALCON_VERSION=4.0.5
+
+### BLACKFIRE #############################################
+
+# Create an account on blackfire.io. Don't enable blackfire and xDebug at the same time. # visit https://blackfire.io/docs/24-days/06-installation#install-probe-debian for more info.
+INSTALL_BLACKFIRE=false
+BLACKFIRE_CLIENT_ID="<client_id>"
+BLACKFIRE_CLIENT_TOKEN="<client_token>"
+BLACKFIRE_SERVER_ID="<server_id>"
+BLACKFIRE_SERVER_TOKEN="<server_token>"
+
+### NGINX #################################################
+NGINX_HOST_HTTP_PORT=9810
+NGINX_PATH=./web
+NGINX_PATH_CONTAINER=/var/app
+
+# You may add flags to the path `:cached`, `:delegated`. When using Docker Sync add `:nocopy`
+NGINX_CONTAINER_FLAG=:cached
+NGINX_HOST_LOG_PATH=./.docker/logs/nginx/
+NGINX_SSL_PATH=./.docker/nginx/ssl/
+
+### MySQL ###############################################
+MYSQL_HOST=mysqldb
+MYSQL_DATABASE=workpress_blog
+MYSQL_ROOT_USER=root
+MYSQL_ROOT_PASSWORD=HJTx4ZNDf4b8zc1
+MYSQL_USER=root
+MYSQL_PASSWORD=HJTx4ZNDf4b8zc1
+MYSQL_PORT=9812
+MYSQL_PATH=./.docker/mysql/conf
+WORKSPACE_TIMEZONE=Asia/Taipei
+
+### phpMyAdmin ###############################################
+PMA_USER=root
+PMA_PASSWORD=HJTx4ZNDf4b8zc1
+PMA_ROOT_PASSWORD=HJTx4ZNDf4b8zc1
+PMA_MAX_EXECUTION_TIME=600
+PMA_MEMORY_LIMIT=256M
+PMA_UPLOAD_LIMIT=2G
+PMA_PORT=9811
+
+### Redis ###############################################
+REDIS_PORT=6379

@@ -1,0 +1,105 @@
+### 說明 ##############################################
+  # redis:      172.99.0.2
+  # mysqldb:    172.99.0.3
+  # myadmin:    172.99.0.4
+  # memcached:  172.99.0.5
+  # wordpress:    172.99.0.6
+
+version: '3.3'
+
+services:
+
+### Memcached ##############################################
+  memcached:
+    build: .docker/memcached
+    volumes:
+      - ${DATA_PATH_HOST}/memcached:/var/lib/memcached
+    ports:
+      - '11211'
+    depends_on:
+      - wordpress
+    networks:
+      backend:
+        ipv4_address: 172.99.0.5
+
+### Redis ##############################################
+  redis:
+    build: .docker/redis
+    command: redis-server --requirepass cs-pass
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ${DATA_PATH_HOST}/radis:/data
+    networks:
+      backend:
+        ipv4_address: 172.99.0.2
+
+### WordPress ##############################################
+  wordpress:
+    depends_on:
+      - mysqldb
+    image: wordpress:latest
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+    ports:
+        - ${NGINX_HOST_HTTP_PORT}:80
+    restart: always
+    environment:
+        WORDPRESS_DB_HOST: ${MYSQL_HOST}
+        WORDPRESS_DB_USER: ${MYSQL_USER}
+        WORDPRESS_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    networks:
+      backend:
+        ipv4_address: 172.99.0.6
+
+### MySQL ##############################################
+  mysqldb:
+    image: mariadb
+    restart: always
+    env_file:
+      - '.env'
+    environment:
+      - TZ=${WORKSPACE_TIMEZONE}
+      - MARIADB_USER=${MYSQL_USER}
+      - MARIADB_ROOT_USER=${MYSQL_USER}
+      - MARIADB_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MAX_CONNECTIONS=1024
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+      - ${MYSQL_PATH}:/etc/mysql/conf.d
+    command: mysqld --sql_mode="" --innodb-large-prefix=on --innodb-file-format=barracuda --innodb-file-per-table=on
+    networks:
+      backend:
+        ipv4_address: 172.99.0.3
+
+### phpMyAdmin ##############################################
+  myadmin:
+    build: .docker/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=mysqldb
+      - MYSQL_USER=${PMA_USER}
+      - MYSQL_PASSWORD=${PMA_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
+      - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
+      - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
+      - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
+    ports:
+      - "${PMA_PORT}:80"
+    depends_on:
+      - mysqldb
+    networks:
+      backend:
+        ipv4_address: 172.99.0.4
+
+### NetWorks ##############################################
+networks:
+  backend:
+    ipam:
+      driver: default 
+      config:
+        - subnet: "172.99.0.0/24"
